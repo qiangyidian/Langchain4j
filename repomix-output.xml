@@ -1,0 +1,435 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.gitignore
+pom.xml
+src/main/java/com/qiangi/consultant/config/OpenAiConfig.java
+src/main/java/com/qiangi/consultant/ConsultantApplication.java
+src/main/java/com/qiangi/consultant/controller/ChatController.java
+src/main/java/com/qiangi/consultant/demos/web/BasicController.java
+src/main/java/com/qiangi/consultant/demos/web/PathVariableController.java
+src/main/java/com/qiangi/consultant/demos/web/User.java
+src/main/resources/application.yml
+src/main/resources/static/index.html
+src/test/java/com/qiangi/consultant/ConsultantApplicationTests.java
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".gitignore">
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+</file>
+
+<file path="pom.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.qiangi</groupId>
+    <artifactId>consultant</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>consultant</name>
+    <description>consultant</description>
+    <properties>
+        <java.version>17</java.version>
+        <spring-boot.version>3.1.12</spring-boot.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+            <version>1.0.1</version>   <!-- 与之前相同版本 -->
+        </dependency>
+
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>        </plugins>
+    </build>
+
+</project>
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/config/OpenAiConfig.java">
+package com.qiangi.consultant.config;
+
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenAiConfig {
+
+    @Value("${langchain4j.open-ai.chat-model.api-key}")
+    private String apiKey;
+
+    @Value("${langchain4j.open-ai.chat-model.base-url}")
+    private String baseUrl;
+
+    @Value("${langchain4j.open-ai.chat-model.model-name}")
+    private String modelName;
+
+    @Bean
+    public OpenAiChatModel openAiChatModel() {
+        return OpenAiChatModel.builder()
+                .apiKey(apiKey)
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .logRequests(true)      // 从 yml 读取，也可硬编码
+                .logResponses(true)
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/ConsultantApplication.java">
+package com.qiangi.consultant;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ConsultantApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ConsultantApplication.class, args);
+    }
+
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/controller/ChatController.java">
+package com.qiangi.consultant.controller;
+
+
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ChatController {
+    @Autowired
+    private OpenAiChatModel model;
+
+
+    @RequestMapping("/chat")
+    public String chat(String message) {//浏览器传递的用户信息
+        return model.chat(message);
+    }
+
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/demos/web/BasicController.java">
+/*
+ * Copyright 2013-2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.qiangi.consultant.demos.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+/**
+ * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
+ */
+@Controller
+public class BasicController {
+
+    // http://127.0.0.1:8080/hello?name=lisi
+    @RequestMapping("/hello")
+    @ResponseBody
+    public String hello(@RequestParam(name = "name", defaultValue = "unknown user") String name) {
+        return "Hello " + name;
+    }
+
+    // http://127.0.0.1:8080/user
+    @RequestMapping("/user")
+    @ResponseBody
+    public User user() {
+        User user = new User();
+        user.setName("theonefx");
+        user.setAge(666);
+        return user;
+    }
+
+    // http://127.0.0.1:8080/save_user?name=newName&age=11
+    @RequestMapping("/save_user")
+    @ResponseBody
+    public String saveUser(User u) {
+        return "user will save: name=" + u.getName() + ", age=" + u.getAge();
+    }
+
+    // http://127.0.0.1:8080/html
+    @RequestMapping("/html")
+    public String html() {
+        return "index.html";
+    }
+
+    @ModelAttribute
+    public void parseUser(@RequestParam(name = "name", defaultValue = "unknown user") String name
+            , @RequestParam(name = "age", defaultValue = "12") Integer age, User user) {
+        user.setName("zhangsan");
+        user.setAge(18);
+    }
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/demos/web/PathVariableController.java">
+/*
+ * Copyright 2013-2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.qiangi.consultant.demos.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+/**
+ * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
+ */
+@Controller
+public class PathVariableController {
+
+    // http://127.0.0.1:8080/user/123/roles/222
+    @RequestMapping(value = "/user/{userId}/roles/{roleId}", method = RequestMethod.GET)
+    @ResponseBody
+    public String getLogin(@PathVariable("userId") String userId, @PathVariable("roleId") String roleId) {
+        return "User Id : " + userId + " Role Id : " + roleId;
+    }
+
+    // http://127.0.0.1:8080/javabeat/somewords
+    @RequestMapping(value = "/javabeat/{regexp1:[a-z-]+}", method = RequestMethod.GET)
+    @ResponseBody
+    public String getRegExp(@PathVariable("regexp1") String regexp1) {
+        return "URI Part : " + regexp1;
+    }
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/demos/web/User.java">
+/*
+ * Copyright 2013-2018 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.qiangi.consultant.demos.web;
+
+/**
+ * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
+ */
+public class User {
+
+    private String name;
+
+    private Integer age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+</file>
+
+<file path="src/main/resources/application.yml">
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      model-name: qwen-plus
+      log-requests: true
+      log-responses: true
+logging:
+  level:
+    dev.langchain4j: debug
+</file>
+
+<file path="src/main/resources/static/index.html">
+<html>
+<body>
+<h1>hello word!!!</h1>
+<p>this is a html page</p>
+</body>
+</html>
+</file>
+
+<file path="src/test/java/com/qiangi/consultant/ConsultantApplicationTests.java">
+package com.qiangi.consultant;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ConsultantApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
+</file>
+
+</files>
