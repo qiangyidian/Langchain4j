@@ -42,6 +42,8 @@ The content is organized as follows:
 <directory_structure>
 .gitignore
 pom.xml
+src/main/java/com/qiangi/consultant/aiservice/ConsultantService.java
+src/main/java/com/qiangi/consultant/config/CommonConfig.java
 src/main/java/com/qiangi/consultant/config/OpenAiConfig.java
 src/main/java/com/qiangi/consultant/ConsultantApplication.java
 src/main/java/com/qiangi/consultant/controller/ChatController.java
@@ -55,6 +57,50 @@ src/test/java/com/qiangi/consultant/ConsultantApplicationTests.java
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/main/java/com/qiangi/consultant/aiservice/ConsultantService.java">
+package com.qiangi.consultant.aiservice;
+
+import dev.langchain4j.service.spring.AiService;
+import dev.langchain4j.service.spring.AiServiceWiringMode;
+
+
+@AiService(
+        wiringMode = AiServiceWiringMode.EXPLICIT,
+        chatModel = "openAiChatModel"
+)
+public interface ConsultantService {
+    //用于聊天的方法
+    public String chat(String message);
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/config/CommonConfig.java">
+package com.qiangi.consultant.config;
+
+
+import com.qiangi.consultant.aiservice.ConsultantService;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class CommonConfig {
+
+    @Autowired
+    private OpenAiChatModel model;
+    @Bean
+    public ConsultantService consultantService() {
+        ConsultantService consultantService = AiServices.builder(ConsultantService.class)
+                .chatModel(model)
+                .build();
+
+        return consultantService;
+    }
+}
+</file>
 
 <file path=".gitignore">
 HELP.md
@@ -105,24 +151,31 @@ build/
     <properties>
         <java.version>17</java.version>
         <spring-boot.version>3.1.12</spring-boot.version>
+        <langchain4j.version>0.36.2</langchain4j.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- LangChain4j 使用 0.36.2 稳定版本 -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-open-ai</artifactId>
-            <version>1.0.1</version>   <!-- 与之前相同版本 -->
+            <version>${langchain4j.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -138,11 +191,6 @@ build/
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -211,6 +259,7 @@ public class ConsultantApplication {
 package com.qiangi.consultant.controller;
 
 
+import com.qiangi.consultant.aiservice.ConsultantService;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -218,14 +267,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ChatController {
+
     @Autowired
-    private OpenAiChatModel model;
+    private ConsultantService consultantService;
 
 
     @RequestMapping("/chat")
-    public String chat(String message) {//浏览器传递的用户信息
-        return model.chat(message);
+    public String chat(String message) {
+        return consultantService.chat(message);
     }
+//    @Autowired
+//    private OpenAiChatModel model;
+//
+//
+//    @RequestMapping("/chat")
+//    public String chat(String message) {//浏览器传递的用户信息
+//        return model.chat(message);
+//    }
 
 }
 </file>
