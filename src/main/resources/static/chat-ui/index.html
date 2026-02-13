@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consultant Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+<div id="app" class="shell">
+    <div class="chat-card">
+        <header class="chat-header">
+            <div class="chat-title">
+                <h1>Consultant Chat</h1>
+                <p>对接后端接口：<code>/chat?message=...</code></p>
+            </div>
+            <button
+                class="btn btn-ghost"
+                type="button"
+                @click="clearConversation"
+                :disabled="isSending || messages.length === 0"
+            >
+                清空会话
+            </button>
+        </header>
+
+        <main class="chat-main" ref="messageList">
+            <section v-if="messages.length === 0" class="empty-state">
+                <h2>开始一次对话</h2>
+                <p>输入你的问题，点击发送后将以流式方式显示回复。</p>
+            </section>
+
+            <article
+                v-for="message in messages"
+                :key="message.id"
+                :class="messageClass(message)"
+            >
+                <div class="message-meta">
+                    <span class="role">{{ roleLabel(message.role) }}</span>
+                    <span class="time">{{ formatTime(message.createdAt) }}</span>
+                </div>
+                <div class="message-content">
+                    <span>{{ message.content }}</span>
+                    <span
+                        v-if="message.role === 'assistant' && message.status === 'streaming'"
+                        class="stream-cursor"
+                        aria-hidden="true"
+                    >
+                        ▌
+                    </span>
+                </div>
+            </article>
+        </main>
+
+        <form class="composer" @submit.prevent="onSend">
+            <label class="composer-label" for="prompt">你的问题</label>
+            <textarea
+                id="prompt"
+                v-model="inputText"
+                @keydown="handleComposerKeydown"
+                :disabled="isSending"
+                placeholder="输入问题后按 Enter 发送，Shift + Enter 换行"
+                rows="3"
+            ></textarea>
+            <div class="composer-actions">
+                <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+                <div class="action-buttons">
+                    <button
+                        v-if="isSending"
+                        type="button"
+                        class="btn btn-stop"
+                        @click="stopGeneration"
+                    >
+                        停止生成
+                    </button>
+                    <button
+                        v-else
+                        type="submit"
+                        class="btn btn-send"
+                        :disabled="!canSend"
+                    >
+                        发送
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
