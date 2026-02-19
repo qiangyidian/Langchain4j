@@ -80,6 +80,12 @@ body::before {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.68), rgba(246, 249, 242, 0.8));
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .chat-title h1 {
     margin: 0;
     font-family: "Bricolage Grotesque", sans-serif;
@@ -97,6 +103,41 @@ body::before {
     font-family: "Bricolage Grotesque", sans-serif;
     color: var(--accent-strong);
     font-size: 12px;
+}
+
+.memory-readout {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: min(100%, 620px);
+    border: 1px solid rgba(160, 171, 160, 0.6);
+    border-radius: 12px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.62);
+}
+
+.memory-readout-label {
+    font-size: 11px;
+    color: var(--text-sub);
+}
+
+.memory-readout-value {
+    max-width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #243f36;
+    font-size: 12px;
+}
+
+.memory-readout-state {
+    flex-shrink: 0;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: #fff9f2;
+    background: var(--accent);
 }
 
 .chat-main {
@@ -334,10 +375,24 @@ body::before {
 
     .chat-header {
         padding: 14px 12px;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .chat-title h1 {
         font-size: 20px;
+    }
+
+    .memory-readout {
+        width: 100%;
+    }
+
+    .memory-readout-value {
+        max-width: calc(100vw - 170px);
+    }
+
+    .header-actions {
+        justify-content: flex-end;
     }
 
     .chat-main {

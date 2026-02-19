@@ -18,16 +18,34 @@
         <header class="chat-header">
             <div class="chat-title">
                 <h1>Consultant Chat</h1>
-                <p>对接后端接口：<code>/chat?message=...</code></p>
+                <p>对接后端接口：<code>/chat?memoryId=...&message=...</code></p>
+                <div class="memory-readout">
+                    <span class="memory-readout-label">当前 memoryId</span>
+                    <code class="memory-readout-value" :title="memoryId">{{ memoryId }}</code>
+                    <span class="memory-readout-state">
+                        {{ memoryIdLockedByUrl ? "URL 固定" : "本地持久化" }}
+                    </span>
+                </div>
             </div>
-            <button
-                class="btn btn-ghost"
-                type="button"
-                @click="clearConversation"
-                :disabled="isSending || messages.length === 0"
-            >
-                清空会话
-            </button>
+            <div class="header-actions">
+                <button
+                    class="btn btn-ghost"
+                    type="button"
+                    @click="startNewSession"
+                    :disabled="isSending || memoryIdLockedByUrl"
+                    :title="memoryIdLockedByUrl ? '当前 memoryId 由 URL 参数固定，无法重置' : ''"
+                >
+                    新建会话
+                </button>
+                <button
+                    class="btn btn-ghost"
+                    type="button"
+                    @click="clearConversation"
+                    :disabled="isSending || messages.length === 0"
+                >
+                    清空会话
+                </button>
+            </div>
         </header>
 
         <main class="chat-main" ref="messageList">

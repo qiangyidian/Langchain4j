@@ -1,4 +1,6 @@
 (function () {
+    var MEMORY_ID_STORAGE_KEY = "consultant.chat.memory_id";
+
     new Vue({
         el: "#app",
         data: function () {
@@ -7,8 +9,13 @@
                 messages: [],
                 isSending: false,
                 abortController: null,
-                messageIdSeed: 1
+                messageIdSeed: 1,
+                memoryId: "",
+                memoryIdLockedByUrl: false
             };
+        },
+        created: function () {
+            this.initializeMemoryId();
         },
         computed: {
             canSend: function () {
@@ -16,6 +23,73 @@
             }
         },
         methods: {
+            createMemoryId: function () {
+                if (window.crypto && typeof window.crypto.randomUUID === "function") {
+                    return window.crypto.randomUUID();
+                }
+                return "m-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+            },
+            getStoredMemoryId: function () {
+                try {
+                    return localStorage.getItem(MEMORY_ID_STORAGE_KEY) || "";
+                } catch (error) {
+                    return "";
+                }
+            },
+            setStoredMemoryId: function (memoryId) {
+                try {
+                    localStorage.setItem(MEMORY_ID_STORAGE_KEY, memoryId);
+                } catch (error) {
+                    return;
+                }
+            },
+            readMemoryIdFromUrl: function () {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var memoryIdFromUrl = params.get("memoryId");
+                    if (memoryIdFromUrl && memoryIdFromUrl.trim()) {
+                        return memoryIdFromUrl.trim();
+                    }
+                } catch (error) {
+                    return "";
+                }
+                return "";
+            },
+            initializeMemoryId: function () {
+                var memoryIdFromUrl = this.readMemoryIdFromUrl();
+                if (memoryIdFromUrl) {
+                    this.memoryId = memoryIdFromUrl;
+                    this.memoryIdLockedByUrl = true;
+                    this.setStoredMemoryId(memoryIdFromUrl);
+                    return;
+                }
+
+                this.memoryIdLockedByUrl = false;
+
+                var memoryIdFromStorage = this.getStoredMemoryId();
+                if (memoryIdFromStorage && memoryIdFromStorage.trim()) {
+                    this.memoryId = memoryIdFromStorage.trim();
+                    return;
+                }
+
+                this.memoryId = this.createMemoryId();
+                this.setStoredMemoryId(this.memoryId);
+            },
+            ensureMemoryId: function () {
+                if (this.memoryId && this.memoryId.trim()) {
+                    return true;
+                }
+                this.initializeMemoryId();
+                return !!(this.memoryId && this.memoryId.trim());
+            },
+            resetMemoryId: function () {
+                if (this.memoryIdLockedByUrl) {
+                    return false;
+                }
+                this.memoryId = this.createMemoryId();
+                this.setStoredMemoryId(this.memoryId);
+                return true;
+            },
             createMessage: function (role, content, status) {
                 return {
                     id: this.messageIdSeed++,
@@ -70,10 +144,25 @@
                     return;
                 }
                 this.messages = [];
+                this.resetMemoryId();
+            },
+            startNewSession: function () {
+                if (this.isSending) {
+                    return;
+                }
+                this.messages = [];
+                if (!this.resetMemoryId()) {
+                    this.addSystemMessage("当前 memoryId 来自 URL，无法重置。", "error");
+                }
             },
             onSend: async function () {
                 var prompt = this.inputText.trim();
                 if (!prompt || this.isSending) {
+                    return;
+                }
+
+                if (!this.ensureMemoryId()) {
+                    this.addSystemMessage("memoryId 缺失，已阻止请求。请刷新页面或新建会话。", "error");
                     return;
                 }
 
@@ -89,7 +178,7 @@
                 this.$nextTick(this.scrollToBottom);
 
                 try {
-                    await this.streamResponse(prompt, assistantMessage, this.abortController.signal);
+                    await this.streamResponse(prompt, this.memoryId, assistantMessage, this.abortController.signal);
                     if (assistantMessage.status !== "error") {
                         assistantMessage.status = "done";
                     }
@@ -107,7 +196,11 @@
                         if (!assistantMessage.content.trim()) {
                             assistantMessage.content = "生成失败，请稍后重试。";
                         }
-                        this.addSystemMessage("请求异常：" + (error && error.message ? error.message : "未知错误"), "error");
+                        var diagnostics = "未知错误";
+                        if (error && error.message) {
+                            diagnostics = error.message;
+                        }
+                        this.addSystemMessage("请求异常：" + diagnostics, "error");
                     }
                 } finally {
                     this.isSending = false;
@@ -115,8 +208,9 @@
                     this.$nextTick(this.scrollToBottom);
                 }
             },
-            streamResponse: async function (prompt, assistantMessage, signal) {
-                var response = await fetch("/chat?message=" + encodeURIComponent(prompt), {
+            streamResponse: async function (prompt, memoryId, assistantMessage, signal) {
+                var url = "/chat?memoryId=" + encodeURIComponent(memoryId) + "&message=" + encodeURIComponent(prompt);
+                var response = await fetch(url, {
                     method: "GET",
                     signal: signal,
                     headers: {
@@ -125,7 +219,17 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
+                    var errorDetails = "";
+                    try {
+                        errorDetails = (await response.text() || "").trim();
+                    } catch (error) {
+                        errorDetails = "";
+                    }
+                    var diagnosticsMessage = "HTTP " + response.status;
+                    if (errorDetails) {
+                        diagnosticsMessage += " - " + errorDetails.slice(0, 200);
+                    }
+                    throw new Error(diagnosticsMessage);
                 }
 
                 if (!response.body) {

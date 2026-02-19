@@ -18,8 +18,11 @@ public class ChatController {
 
 
     @RequestMapping(value = "/chat", produces = "text/html;charset=utf-8")
-    public Flux<String> chat(@RequestParam("message") String message) {
-        return consultantService.chat(message);
+    public Flux<String> chat(
+            @RequestParam(name = "memoryId", defaultValue = "default-session") String memoryId,
+            @RequestParam("message") String message
+    ) {
+        return consultantService.chat(memoryId,message);
     }
 
 //    @RequestMapping("/chat")

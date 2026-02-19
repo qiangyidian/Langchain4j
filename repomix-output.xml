@@ -51,56 +51,16 @@ src/main/java/com/qiangi/consultant/demos/web/BasicController.java
 src/main/java/com/qiangi/consultant/demos/web/PathVariableController.java
 src/main/java/com/qiangi/consultant/demos/web/User.java
 src/main/resources/application.yml
+src/main/resources/static/chat-ui/app.css
+src/main/resources/static/chat-ui/app.js
+src/main/resources/static/chat-ui/index.html
 src/main/resources/static/index.html
+src/main/resources/system.txt
 src/test/java/com/qiangi/consultant/ConsultantApplicationTests.java
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/main/java/com/qiangi/consultant/aiservice/ConsultantService.java">
-package com.qiangi.consultant.aiservice;
-
-import dev.langchain4j.service.spring.AiService;
-import dev.langchain4j.service.spring.AiServiceWiringMode;
-
-
-@AiService(
-        wiringMode = AiServiceWiringMode.EXPLICIT,
-        chatModel = "openAiChatModel"
-)
-public interface ConsultantService {
-    //用于聊天的方法
-    public String chat(String message);
-}
-</file>
-
-<file path="src/main/java/com/qiangi/consultant/config/CommonConfig.java">
-package com.qiangi.consultant.config;
-
-
-import com.qiangi.consultant.aiservice.ConsultantService;
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.service.AiServices;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class CommonConfig {
-
-    @Autowired
-    private OpenAiChatModel model;
-    @Bean
-    public ConsultantService consultantService() {
-        ConsultantService consultantService = AiServices.builder(ConsultantService.class)
-                .chatModel(model)
-                .build();
-
-        return consultantService;
-    }
-}
-</file>
 
 <file path=".gitignore">
 HELP.md
@@ -138,107 +98,6 @@ build/
 .vscode/
 </file>
 
-<file path="pom.xml">
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.qiangi</groupId>
-    <artifactId>consultant</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>consultant</name>
-    <description>consultant</description>
-    <properties>
-        <java.version>17</java.version>
-        <spring-boot.version>3.1.12</spring-boot.version>
-        <langchain4j.version>0.36.2</langchain4j.version>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- LangChain4j 使用 0.36.2 稳定版本 -->
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-open-ai</artifactId>
-            <version>${langchain4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j</artifactId>
-            <version>${langchain4j.version}</version>
-        </dependency>
-    </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>        </plugins>
-    </build>
-
-</project>
-</file>
-
-<file path="src/main/java/com/qiangi/consultant/config/OpenAiConfig.java">
-package com.qiangi.consultant.config;
-
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class OpenAiConfig {
-
-    @Value("${langchain4j.open-ai.chat-model.api-key}")
-    private String apiKey;
-
-    @Value("${langchain4j.open-ai.chat-model.base-url}")
-    private String baseUrl;
-
-    @Value("${langchain4j.open-ai.chat-model.model-name}")
-    private String modelName;
-
-    @Bean
-    public OpenAiChatModel openAiChatModel() {
-        return OpenAiChatModel.builder()
-                .apiKey(apiKey)
-                .baseUrl(baseUrl)
-                .modelName(modelName)
-                .logRequests(true)      // 从 yml 读取，也可硬编码
-                .logResponses(true)
-                .build();
-    }
-}
-</file>
-
 <file path="src/main/java/com/qiangi/consultant/ConsultantApplication.java">
 package com.qiangi.consultant;
 
@@ -251,39 +110,6 @@ public class ConsultantApplication {
     public static void main(String[] args) {
         SpringApplication.run(ConsultantApplication.class, args);
     }
-
-}
-</file>
-
-<file path="src/main/java/com/qiangi/consultant/controller/ChatController.java">
-package com.qiangi.consultant.controller;
-
-
-import com.qiangi.consultant.aiservice.ConsultantService;
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class ChatController {
-
-    @Autowired
-    private ConsultantService consultantService;
-
-
-    @RequestMapping("/chat")
-    public String chat(String message) {
-        return consultantService.chat(message);
-    }
-//    @Autowired
-//    private OpenAiChatModel model;
-//
-//
-//    @RequestMapping("/chat")
-//    public String chat(String message) {//浏览器传递的用户信息
-//        return model.chat(message);
-//    }
 
 }
 </file>
@@ -451,18 +277,640 @@ public class User {
 }
 </file>
 
-<file path="src/main/resources/application.yml">
-langchain4j:
-  open-ai:
-    chat-model:
-      api-key: ${OPENAI_API_KEY}
-      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-      model-name: qwen-plus
-      log-requests: true
-      log-responses: true
-logging:
-  level:
-    dev.langchain4j: debug
+<file path="src/main/resources/static/chat-ui/app.css">
+:root {
+    --bg-0: #f3f4ef;
+    --bg-1: #dde4db;
+    --surface: #ffffffcc;
+    --surface-solid: #f9faf6;
+    --line: #cfd8cc;
+    --text-main: #1d2723;
+    --text-sub: #5a6760;
+    --user-bubble: #18443c;
+    --user-text: #f6fbf9;
+    --assistant-bubble: #f0f4ed;
+    --error-bubble: #fde9e6;
+    --error-line: #efb5ad;
+    --accent: #be7e35;
+    --accent-strong: #9d6727;
+    --stop: #c03d3d;
+    --radius-card: 26px;
+    --radius-bubble: 18px;
+    --shadow: 0 18px 42px rgba(17, 38, 31, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Noto Sans SC", sans-serif;
+    color: var(--text-main);
+    background:
+        radial-gradient(1200px 520px at 85% -15%, rgba(25, 114, 103, 0.16), transparent 65%),
+        radial-gradient(900px 380px at -10% 110%, rgba(190, 126, 53, 0.12), transparent 60%),
+        linear-gradient(160deg, var(--bg-0), var(--bg-1));
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    background-image:
+        linear-gradient(0deg, transparent 97%, rgba(31, 47, 40, 0.55) 100%),
+        linear-gradient(90deg, transparent 97%, rgba(31, 47, 40, 0.42) 100%);
+    background-size: 22px 22px;
+}
+
+.shell {
+    height: 100%;
+    padding: 18px;
+}
+
+.chat-card {
+    position: relative;
+    height: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(84, 109, 101, 0.26);
+    background: var(--surface);
+    backdrop-filter: blur(9px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 22px 16px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.68), rgba(246, 249, 242, 0.8));
+}
+
+.chat-title h1 {
+    margin: 0;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.2px;
+}
+
+.chat-title p {
+    margin: 4px 0 0;
+    color: var(--text-sub);
+    font-size: 13px;
+}
+
+.chat-title code {
+    font-family: "Bricolage Grotesque", sans-serif;
+    color: var(--accent-strong);
+    font-size: 12px;
+}
+
+.chat-main {
+    padding: 22px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.58) 0%, rgba(241, 245, 238, 0.74) 100%);
+}
+
+.empty-state {
+    margin: auto;
+    max-width: 460px;
+    text-align: center;
+    border: 1px dashed var(--line);
+    border-radius: 16px;
+    padding: 32px 24px;
+    background: rgba(255, 255, 255, 0.48);
+}
+
+.empty-state h2 {
+    margin: 0 0 8px;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 24px;
+}
+
+.empty-state p {
+    margin: 0;
+    color: var(--text-sub);
+}
+
+.message {
+    max-width: min(82%, 760px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: var(--radius-bubble);
+    border: 1px solid var(--line);
+    animation: rise 0.22s ease;
+}
+
+.message .message-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-sub);
+}
+
+.message .role {
+    font-weight: 700;
+}
+
+.message .message-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.65;
+}
+
+.message--assistant {
+    align-self: flex-start;
+    background: var(--assistant-bubble);
+}
+
+.message--user {
+    align-self: flex-end;
+    background: var(--user-bubble);
+    color: var(--user-text);
+    border-color: transparent;
+}
+
+.message--user .message-meta {
+    color: rgba(244, 251, 246, 0.78);
+}
+
+.message--system {
+    align-self: center;
+    max-width: min(94%, 760px);
+    background: var(--error-bubble);
+    border-color: var(--error-line);
+}
+
+.message.is-error {
+    background: var(--error-bubble);
+    border-color: var(--error-line);
+}
+
+.stream-cursor {
+    display: inline-block;
+    margin-left: 3px;
+    color: var(--accent-strong);
+    animation: blink 1s steps(2) infinite;
+}
+
+.composer {
+    padding: 14px 18px 18px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(247, 249, 243, 0.82) 0%, rgba(240, 244, 236, 0.95) 100%);
+}
+
+.composer-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-sub);
+}
+
+.composer textarea {
+    width: 100%;
+    resize: none;
+    border: 1px solid #bdc9bc;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.92);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.composer textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(190, 126, 53, 0.16);
+}
+
+.composer textarea:disabled {
+    opacity: 0.68;
+}
+
+.composer-actions {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hint {
+    color: var(--text-sub);
+    font-size: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.15px;
+    cursor: pointer;
+    transition: transform 0.14s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-ghost {
+    border-color: #bcc8be;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.54);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.btn-send {
+    background: var(--accent);
+    color: #fff9f2;
+}
+
+.btn-send:hover:not(:disabled) {
+    background: var(--accent-strong);
+}
+
+.btn-stop {
+    background: var(--stop);
+    color: #fff7f5;
+}
+
+.btn-stop:hover {
+    background: #a93333;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0.12;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.12;
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 760px) {
+    .shell {
+        padding: 0;
+    }
+
+    .chat-card {
+        border-radius: 0;
+        border: none;
+        height: 100%;
+    }
+
+    .chat-header {
+        padding: 14px 12px;
+    }
+
+    .chat-title h1 {
+        font-size: 20px;
+    }
+
+    .chat-main {
+        padding: 14px 10px;
+    }
+
+    .message {
+        max-width: 96%;
+    }
+
+    .composer {
+        padding: 10px;
+    }
+
+    .composer-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-buttons {
+        justify-content: flex-end;
+    }
+}
+</file>
+
+<file path="src/main/resources/static/chat-ui/app.js">
+(function () {
+    new Vue({
+        el: "#app",
+        data: function () {
+            return {
+                inputText: "",
+                messages: [],
+                isSending: false,
+                abortController: null,
+                messageIdSeed: 1
+            };
+        },
+        computed: {
+            canSend: function () {
+                return !this.isSending && this.inputText.trim().length > 0;
+            }
+        },
+        methods: {
+            createMessage: function (role, content, status) {
+                return {
+                    id: this.messageIdSeed++,
+                    role: role,
+                    content: content || "",
+                    createdAt: Date.now(),
+                    status: status || "done"
+                };
+            },
+            roleLabel: function (role) {
+                if (role === "user") {
+                    return "你";
+                }
+                if (role === "assistant") {
+                    return "助手";
+                }
+                return "系统";
+            },
+            formatTime: function (timestamp) {
+                var date = new Date(timestamp);
+                return date.toLocaleTimeString("zh-CN", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            },
+            messageClass: function (message) {
+                return [
+                    "message",
+                    "message--" + message.role,
+                    message.status === "streaming" ? "is-streaming" : "",
+                    message.status === "error" ? "is-error" : ""
+                ];
+            },
+            addSystemMessage: function (content, status) {
+                var message = this.createMessage("system", content, status || "error");
+                this.messages.push(message);
+                this.$nextTick(this.scrollToBottom);
+            },
+            handleComposerKeydown: function (event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    this.onSend();
+                }
+            },
+            stopGeneration: function () {
+                if (this.abortController) {
+                    this.abortController.abort();
+                }
+            },
+            clearConversation: function () {
+                if (this.isSending) {
+                    return;
+                }
+                this.messages = [];
+            },
+            onSend: async function () {
+                var prompt = this.inputText.trim();
+                if (!prompt || this.isSending) {
+                    return;
+                }
+
+                this.inputText = "";
+                this.isSending = true;
+                this.abortController = new AbortController();
+
+                var userMessage = this.createMessage("user", prompt, "done");
+                this.messages.push(userMessage);
+
+                var assistantMessage = this.createMessage("assistant", "", "streaming");
+                this.messages.push(assistantMessage);
+                this.$nextTick(this.scrollToBottom);
+
+                try {
+                    await this.streamResponse(prompt, assistantMessage, this.abortController.signal);
+                    if (assistantMessage.status !== "error") {
+                        assistantMessage.status = "done";
+                    }
+                    if (!assistantMessage.content.trim()) {
+                        assistantMessage.content = "（未收到有效响应）";
+                    }
+                } catch (error) {
+                    if (error && error.name === "AbortError") {
+                        if (!assistantMessage.content.trim()) {
+                            assistantMessage.content = "已停止生成";
+                        }
+                        assistantMessage.status = "done";
+                    } else {
+                        assistantMessage.status = "error";
+                        if (!assistantMessage.content.trim()) {
+                            assistantMessage.content = "生成失败，请稍后重试。";
+                        }
+                        this.addSystemMessage("请求异常：" + (error && error.message ? error.message : "未知错误"), "error");
+                    }
+                } finally {
+                    this.isSending = false;
+                    this.abortController = null;
+                    this.$nextTick(this.scrollToBottom);
+                }
+            },
+            streamResponse: async function (prompt, assistantMessage, signal) {
+                var response = await fetch("/chat?message=" + encodeURIComponent(prompt), {
+                    method: "GET",
+                    signal: signal,
+                    headers: {
+                        Accept: "text/plain, text/html"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status);
+                }
+
+                if (!response.body) {
+                    assistantMessage.content = await response.text();
+                    return;
+                }
+
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder("utf-8");
+
+                while (true) {
+                    var result = await reader.read();
+                    if (result.done) {
+                        break;
+                    }
+                    var chunk = decoder.decode(result.value, { stream: true });
+                    if (chunk) {
+                        assistantMessage.content += chunk;
+                        this.$nextTick(this.scrollToBottom);
+                    }
+                }
+
+                var lastChunk = decoder.decode();
+                if (lastChunk) {
+                    assistantMessage.content += lastChunk;
+                }
+            },
+            scrollToBottom: function () {
+                var container = this.$refs.messageList;
+                if (!container) {
+                    return;
+                }
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+    });
+})();
+</file>
+
+<file path="src/main/resources/static/chat-ui/index.html">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consultant Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+<div id="app" class="shell">
+    <div class="chat-card">
+        <header class="chat-header">
+            <div class="chat-title">
+                <h1>Consultant Chat</h1>
+                <p>对接后端接口：<code>/chat?message=...</code></p>
+            </div>
+            <button
+                class="btn btn-ghost"
+                type="button"
+                @click="clearConversation"
+                :disabled="isSending || messages.length === 0"
+            >
+                清空会话
+            </button>
+        </header>
+
+        <main class="chat-main" ref="messageList">
+            <section v-if="messages.length === 0" class="empty-state">
+                <h2>开始一次对话</h2>
+                <p>输入你的问题，点击发送后将以流式方式显示回复。</p>
+            </section>
+
+            <article
+                v-for="message in messages"
+                :key="message.id"
+                :class="messageClass(message)"
+            >
+                <div class="message-meta">
+                    <span class="role">{{ roleLabel(message.role) }}</span>
+                    <span class="time">{{ formatTime(message.createdAt) }}</span>
+                </div>
+                <div class="message-content">
+                    <span>{{ message.content }}</span>
+                    <span
+                        v-if="message.role === 'assistant' && message.status === 'streaming'"
+                        class="stream-cursor"
+                        aria-hidden="true"
+                    >
+                        ▌
+                    </span>
+                </div>
+            </article>
+        </main>
+
+        <form class="composer" @submit.prevent="onSend">
+            <label class="composer-label" for="prompt">你的问题</label>
+            <textarea
+                id="prompt"
+                v-model="inputText"
+                @keydown="handleComposerKeydown"
+                :disabled="isSending"
+                placeholder="输入问题后按 Enter 发送，Shift + Enter 换行"
+                rows="3"
+            ></textarea>
+            <div class="composer-actions">
+                <span class="hint">Enter 发送 · Shift+Enter 换行</span>
+                <div class="action-buttons">
+                    <button
+                        v-if="isSending"
+                        type="button"
+                        class="btn btn-stop"
+                        @click="stopGeneration"
+                    >
+                        停止生成
+                    </button>
+                    <button
+                        v-else
+                        type="submit"
+                        class="btn btn-send"
+                        :disabled="!canSend"
+                    >
+                        发送
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
 </file>
 
 <file path="src/main/resources/static/index.html">
@@ -472,6 +920,30 @@ logging:
 <p>this is a html page</p>
 </body>
 </html>
+</file>
+
+<file path="src/main/resources/system.txt">
+你是传智教育提供的专业的AI志愿填报顾问，可以给用户提供如下功能:
+
+1. 查询目标院校的院校简介
+2. 查询目标院校的录取规则
+3. 查询目标院校的奖学金设置状况
+4. 查询目标院校的食宿条件
+5. 查询目标院校招生联系方式
+6. 查询目标院校2024年不同专业录取情况
+7. 查询热门专业
+8. 查询天坑专业
+9. 根据学生提供的分数和不同学校以及学校历年来录取分数，推荐合适的学校和专业，每次根据匹配度，按照冲、稳、保的逻辑，罗列出合适的学校以及专业，给用户呈现时需要呈【补全：现“冲/稳/保”分类结果或清单】。
+10. 高考志愿填报一对一沟通预约的服务
+11. 查询志愿指导服务预约详情
+
+说明:
+    1. 每次回答完用户问题，最后都加上一句话: <br/>志愿填报需要考虑的因素有很多，如果要得到专业的志愿填报指导，建议您预约一个一对一的指导服务，是否需要预约?
+    2. 下预约单需要用户提供生姓名、考生性别、考生电话、考生预约沟通时间(日期+时间)、考生所在省份、考生预估分数，当用户表达出需要预约的志愿指导服务的意愿后，你
+    3. 一旦预约成功，最后不要再跟上面第1条指定的话术，而是更改为: 恭喜您，一对一志愿指导服务已经预约成功，我们会准时联系您，请注意接听电话!
+    4. 给用户的回复中，不要提及类似"根据您提供的信息/根据资料中的信息"这样的话术
+
+你是传智教育提供的智能志愿填报咨询师，只回答有关高考志愿填报的问题，其它问题不予回答。
 </file>
 
 <file path="src/test/java/com/qiangi/consultant/ConsultantApplicationTests.java">
@@ -486,6 +958,283 @@ class ConsultantApplicationTests {
     @Test
     void contextLoads() {
     }
+
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/config/CommonConfig.java">
+package com.qiangi.consultant.config;
+
+import dev.langchain4j.memory.ChatMemory;
+import dev.langchain4j.memory.chat.ChatMemoryProvider;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class CommonConfig {
+
+    @Autowired
+    private OpenAiChatModel openAiChatModel;
+
+
+    //构建会话记忆对象
+    @Bean
+    public ChatMemory chatMemory() {
+        MessageWindowChatMemory memory = MessageWindowChatMemory.builder()
+                .maxMessages(20)
+                .build();
+        return memory;
+    }
+    public ChatMemoryProvider chatMemoryProvider() {
+        ChatMemoryProvider chatMemoryProvider = new ChatMemoryProvider(){
+            @Override
+            public ChatMemory get(Object memoryid) {
+                return MessageWindowChatMemory.builder()
+                        .id(memoryid)
+                        .maxMessages(20)
+                        .build();
+            }
+        };
+        return chatMemoryProvider;
+
+    }
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/config/OpenAiConfig.java">
+package com.qiangi.consultant.config;
+
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class OpenAiConfig {
+
+    @Value("${langchain4j.open-ai.chat-model.api-key}")
+    private String apiKey;
+
+    @Value("${langchain4j.open-ai.chat-model.base-url}")
+    private String baseUrl;
+
+    @Value("${langchain4j.open-ai.chat-model.model-name}")
+    private String modelName;
+
+    @Value("${langchain4j.open-ai.stream-chat-model.api-key}")
+    private String streamApiKey;
+
+    @Value("${langchain4j.open-ai.stream-chat-model.base-url}")
+    private String streamBaseUrl;
+
+    @Value("${langchain4j.open-ai.stream-chat-model.model-name}")
+    private String streamModelName;
+
+    @Value("${langchain4j.open-ai.stream-chat-model.log-requests}")
+    private boolean streamLogRequests;
+
+    @Value("${langchain4j.open-ai.stream-chat-model.log-responses}")
+    private boolean streamLogResponses;
+
+    @Bean
+    public OpenAiChatModel openAiChatModel() {
+        return OpenAiChatModel.builder()
+                .apiKey(apiKey)
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .logRequests(true)      // 从 yml 读取，也可硬编码
+                .logResponses(true)
+                .build();
+    }
+
+    @Bean(name = "openAiStreamChatModel")
+    public OpenAiStreamingChatModel openAiStreamChatModel() {
+        return OpenAiStreamingChatModel.builder()
+                .apiKey(streamApiKey)
+                .baseUrl(streamBaseUrl)
+                .modelName(streamModelName)
+                .logRequests(streamLogRequests)
+                .logResponses(streamLogResponses)
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/resources/application.yml">
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      model-name: qwen-plus
+      log-requests: true
+      log-responses: true
+    stream-chat-model:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      model-name: qwen-plus
+      log-requests: true
+      log-responses: true
+logging:
+  level:
+    dev.langchain4j: debug
+</file>
+
+<file path="pom.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.qiangi</groupId>
+    <artifactId>consultant</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>consultant</name>
+    <description>consultant</description>
+    <properties>
+        <java.version>17</java.version>
+        <spring-boot.version>3.2.12</spring-boot.version>
+        <langchain4j.version>0.36.2</langchain4j.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- LangChain4j 使用 0.36.2 稳定版本 -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-spring-boot-starter</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+        <!-- 引入流式调用相关的依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+            <version>${langchain4j.version}</version>
+        </dependency>
+
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>        </plugins>
+    </build>
+
+</project>
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/aiservice/ConsultantService.java">
+package com.qiangi.consultant.aiservice;
+
+import dev.langchain4j.service.MemoryId;
+import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.spring.AiService;
+import dev.langchain4j.service.spring.AiServiceWiringMode;
+import reactor.core.publisher.Flux;
+
+
+@AiService(
+        wiringMode = AiServiceWiringMode.EXPLICIT, //手动装配
+        chatModel = "openAiChatModel", //指定模型
+        streamingChatModel = "openAiStreamChatModel",
+//        chatMemory = "chatMemory" //配置会话记忆对象
+        chatMemoryProvider = "chatMemoryProvider"
+)
+public interface ConsultantService {
+    //用于聊天的方法
+//    public String chat(String message);
+
+    @SystemMessage(fromResource = "system.txt")
+    @UserMessage("你是我的助手,你的态度要温柔仔细{{it}}")//这里的it是占位符,意思是input
+    public Flux<String> chat(@MemoryId String memoryId, String message);
+}
+</file>
+
+<file path="src/main/java/com/qiangi/consultant/controller/ChatController.java">
+package com.qiangi.consultant.controller;
+
+
+import com.qiangi.consultant.aiservice.ConsultantService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
+public class ChatController {
+
+    @Autowired
+    private ConsultantService consultantService;
+
+
+
+
+    @RequestMapping(value = "/chat", produces = "text/html;charset=utf-8")
+    public Flux<String> chat(@RequestParam("message") String message) {
+        return consultantService.chat(message);
+    }
+
+//    @RequestMapping("/chat")
+//    public String chat(@RequestParam("message") String message) {
+//        return consultantService.chat(message);
+//    }
+//    @Autowired
+//    private OpenAiChatModel model;
+//
+//
+//    @RequestMapping("/chat")
+//    public String chat(String message) {//浏览器传递的用户信息
+//        return model.chat(message);
+//    }
 
 }
 </file>
